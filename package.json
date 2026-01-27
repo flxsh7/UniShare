@@ -1,0 +1,17 @@
+{
+    "name": "unishare",
+    "version": "1.0.0",
+    "description": "UniShare - University Document Sharing Platform",
+    "scripts": {
+        "start": "cd server && npm start",
+        "dev": "cd server && npm run dev",
+        "install-all": "cd server && npm install && cd ../client && npm install"
+    },
+    "keywords": [
+        "university",
+        "document-sharing",
+        "education"
+    ],
+    "author": "",
+    "license": "MIT"
+}
