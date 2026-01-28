@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://unishare-production-561a.up.railway.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://unishare-nwsc.onrender.com/api';
 
 // Create axios instance
 const api = axios.create({
