@@ -90,7 +90,7 @@ export default function DocumentsPage() {
         try {
             await documentAPI.incrementDownload(doc.id);
 
-            // Extract file extension from file_type or URL
+            // Extract file extension from file_type
             let fileExtension = '';
             if (doc.file_type) {
                 const mimeToExt = {
@@ -105,35 +105,59 @@ export default function DocumentsPage() {
                 fileExtension = mimeToExt[doc.file_type] || '';
             }
 
-            // Try to fetch and download the file
-            console.log('📥 Downloading file from:', doc.file_url);
-            const response = await fetch(doc.file_url, {
-                mode: 'cors',
-                credentials: 'omit'
+            // Detect if user is on mobile device
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            console.log('📥 Downloading file:', {
+                title: doc.title,
+                url: doc.file_url,
+                isMobile,
+                userAgent: navigator.userAgent
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (isMobile) {
+                // Mobile approach: Use server proxy endpoint for proper headers
+                // This ensures the file downloads correctly on mobile browsers
+                const downloadUrl = documentAPI.getDownloadUrl(doc.id);
+
+                console.log('📱 Using mobile download endpoint:', downloadUrl);
+
+                // Open the download URL directly - server will handle the redirect
+                window.location.href = downloadUrl;
+
+                console.log('✅ Mobile download initiated');
+            } else {
+                // Desktop approach: Fetch blob for better control
+                const response = await fetch(doc.file_url, {
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                console.log('✅ File blob received:', {
+                    size: blob.size,
+                    type: blob.type
+                });
+
+                if (blob.size === 0) {
+                    throw new Error('Downloaded file is empty (0 bytes)');
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = (doc.title || 'download') + fileExtension;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                console.log('✅ Desktop download completed');
             }
-
-            const blob = await response.blob();
-            console.log('✅ File blob received:', {
-                size: blob.size,
-                type: blob.type
-            });
-
-            if (blob.size === 0) {
-                throw new Error('Downloaded file is empty (0 bytes)');
-            }
-
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = (doc.title || 'download') + fileExtension;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
         } catch (err) {
             console.error('❌ Error downloading document:', {
                 message: err.message,

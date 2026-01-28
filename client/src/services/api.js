@@ -84,6 +84,7 @@ export const documentAPI = {
         });
     },
     incrementDownload: (id) => api.post(`/documents/${id}/download`),
+    getDownloadUrl: (id) => `${API_URL}/documents/${id}/download-file`,
     delete: (id) => api.delete(`/documents/${id}`)
 };
 

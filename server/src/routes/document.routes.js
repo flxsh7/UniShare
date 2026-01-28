@@ -6,6 +6,7 @@ import {
     getDocuments,
     getDocument,
     incrementDownloadCount,
+    downloadFile,
     deleteDocument
 } from '../controllers/document.controller.js';
 
@@ -25,6 +26,7 @@ router.post(
 );
 
 router.post('/:id/download', requireAuth, incrementDownloadCount);
+router.get('/:id/download-file', requireAuth, downloadFile);
 router.delete('/:id', requireAuth, deleteDocument);
 
 export default router;
