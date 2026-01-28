@@ -35,18 +35,20 @@ export default function UploadPage() {
     const loadDepartments = async () => {
         try {
             const response = await departmentAPI.getAll();
-            setDepartments(response.data.data);
+            setDepartments(response.data?.data || []);
         } catch (err) {
             console.error('Error loading departments:', err);
+            setDepartments([]);
         }
     };
 
     const loadSemesters = async (departmentId) => {
         try {
             const response = await departmentAPI.getSemesters(departmentId);
-            setSemesters(response.data.data);
+            setSemesters(response.data?.data || []);
         } catch (err) {
             console.error('Error loading semesters:', err);
+            setSemesters([]);
         }
     };
 
