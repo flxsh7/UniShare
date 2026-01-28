@@ -36,26 +36,28 @@ export default function DocumentsPage() {
     const loadDepartments = async () => {
         try {
             const response = await departmentAPI.getAll();
-            setDepartments(response.data.data);
+            setDepartments(response.data?.data || []);
         } catch (err) {
             console.error('Error loading departments:', err);
+            setDepartments([]);
         }
     };
 
     const loadSemesters = async (departmentId) => {
         try {
             const response = await departmentAPI.getSemesters(departmentId);
-            setSemesters(response.data.data);
+            setSemesters(response.data?.data || []);
         } catch (err) {
             console.error('Error loading semesters:', err);
+            setSemesters([]);
         }
     };
 
     const loadDocuments = async () => {
+        const params = {};
         try {
             setLoading(true);
             setError(null);
-            const params = {};
             if (selectedDepartment) params.departmentId = selectedDepartment;
             if (selectedSemester) params.semesterId = selectedSemester;
             if (searchQuery) params.search = searchQuery;
@@ -65,11 +67,11 @@ export default function DocumentsPage() {
             const response = await documentAPI.getAll(params);
 
             console.log('✅ Documents loaded successfully:', {
-                count: response.data.data.length,
-                pagination: response.data.pagination
+                count: response.data?.data?.length || 0,
+                pagination: response.data?.pagination
             });
 
-            setDocuments(response.data.data);
+            setDocuments(response.data?.data || []);
         } catch (err) {
             const errorMessage = err.response?.data?.error || err.message || 'Failed to load documents';
             setError(errorMessage);
