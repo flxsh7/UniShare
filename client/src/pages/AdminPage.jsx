@@ -21,10 +21,11 @@ export default function AdminPage() {
         try {
             setLoading(true);
             const response = await departmentAPI.getAll();
-            setDepartments(response.data.data);
+            setDepartments(response.data?.data || []);
         } catch (err) {
             setError('Failed to load departments');
             console.error('Error loading departments:', err);
+            setDepartments([]);
         } finally {
             setLoading(false);
         }
