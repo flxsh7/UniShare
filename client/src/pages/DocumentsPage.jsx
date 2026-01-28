@@ -60,11 +60,27 @@ export default function DocumentsPage() {
             if (selectedSemester) params.semesterId = selectedSemester;
             if (searchQuery) params.search = searchQuery;
 
+            console.log('📄 Loading documents with params:', params);
+
             const response = await documentAPI.getAll(params);
+
+            console.log('✅ Documents loaded successfully:', {
+                count: response.data.data.length,
+                pagination: response.data.pagination
+            });
+
             setDocuments(response.data.data);
         } catch (err) {
-            setError('Failed to load documents');
-            console.error('Error loading documents:', err);
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to load documents';
+            setError(errorMessage);
+
+            console.error('❌ Error loading documents:', {
+                message: err.message,
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data,
+                params
+            });
         } finally {
             setLoading(false);
         }

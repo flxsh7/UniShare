@@ -26,14 +26,39 @@ api.interceptors.request.use(
                 const token = await getTokenFunction();
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
+                    console.log('🔐 Token attached to request:', config.url);
+                } else {
+                    console.log('⚠️ No token available for request:', config.url);
                 }
             } catch (error) {
-                console.error('Error getting token:', error);
+                console.error('❌ Error getting token:', error);
             }
+        } else {
+            console.log('⚠️ No getToken function available for request:', config.url);
         }
         return config;
     },
     (error) => {
+        console.error('❌ Request interceptor error:', error);
+        return Promise.reject(error);
+    }
+);
+
+// Add response interceptor to handle errors
+api.interceptors.response.use(
+    (response) => {
+        console.log('✅ API Response:', response.config.url, response.status);
+        return response;
+    },
+    (error) => {
+        console.error('❌ API Error:', {
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+        });
         return Promise.reject(error);
     }
 );

@@ -69,6 +69,14 @@ export const getDocuments = async (req, res, next) => {
     try {
         const { departmentId, semesterId, search, page = 1, limit = 20 } = req.query;
 
+        console.log('📄 GET /api/documents - Request params:', {
+            departmentId,
+            semesterId,
+            search,
+            page,
+            limit
+        });
+
         let queryText = `
       SELECT d.*, 
              dep.name as department_name, 
@@ -109,7 +117,11 @@ export const getDocuments = async (req, res, next) => {
         queryText += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
         queryParams.push(limit, (page - 1) * limit);
 
+        console.log('🔍 Executing query with params:', queryParams);
+
         const result = await query(queryText, queryParams);
+
+        console.log(`✅ Found ${result.rows.length} documents`);
 
         // Get total count
         let countQuery = `SELECT COUNT(*) FROM documents d WHERE 1=1`;
@@ -136,6 +148,8 @@ export const getDocuments = async (req, res, next) => {
         const countResult = await query(countQuery, countParams);
         const totalCount = parseInt(countResult.rows[0].count);
 
+        console.log(`📊 Total count: ${totalCount}`);
+
         res.json({
             success: true,
             data: result.rows,
@@ -147,6 +161,12 @@ export const getDocuments = async (req, res, next) => {
             }
         });
     } catch (error) {
+        console.error('❌ Error in getDocuments:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
         next(error);
     }
 };
