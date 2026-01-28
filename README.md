@@ -23,7 +23,7 @@ A modern web application for university students and faculty to share academic d
 
 **Deployment:**
 - Frontend: Vercel
-- Backend: Railway
+- Backend: Render.com
 - Database: Supabase
 - File Storage: Cloudinary
 
@@ -46,7 +46,7 @@ A modern web application for university students and faculty to share academic d
 - PostgreSQL database (Supabase account)
 - Clerk account
 - Cloudinary account
-- Railway account (for backend deployment)
+- Render.com account (for backend deployment)
 - Vercel account (for frontend deployment)
 
 ---
@@ -131,29 +131,32 @@ npm run dev
 
 ## 🌐 Production Deployment
 
-### Backend Deployment (Railway)
+### Backend Deployment (Render.com)
 
-1. **Create Railway Project**
-   - Go to https://railway.app
-   - Click "New Project" → "Deploy from GitHub repo"
+1. **Create Render Project**
+   - Go to https://render.com
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
    - Select your UniShare repository
 
 2. **Configure Service**
-   - Railway will auto-detect Node.js
-   - No additional configuration needed (uses `railway.json`)
+   - Render will auto-detect Node.js (uses `render.yaml`)
+   - Root Directory: `server`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
 
 3. **Add Environment Variables**
-   - Go to Variables tab
+   - Go to Environment tab
    - Add all variables from `server/.env.example`
    - **Important:** Use Supabase's connection pooler URL:
      ```
      postgresql://postgres.[project]:PASSWORD@aws-1-[region].pooler.supabase.com:6543/postgres
      ```
-   - URL-encode special characters in password
+   - URL-encode special characters in password (& → %26, / → %2F, @ → %40)
 
 4. **Get Backend URL**
-   - Go to Settings → Networking → Generate Domain
-   - Copy the URL (e.g., `https://unishare-production-561a.up.railway.app`)
+   - After deployment completes
+   - Copy the URL (e.g., `https://unishare-nwsc.onrender.com`)
 
 ### Frontend Deployment (Vercel)
 
@@ -171,7 +174,7 @@ npm run dev
 3. **Add Environment Variables**
    ```
    VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-   VITE_API_URL=https://YOUR_RAILWAY_URL/api
+   VITE_API_URL=https://YOUR_RENDER_URL/api
    ```
 
 4. **Deploy**
@@ -217,10 +220,9 @@ UniShare/
 │   │   ├── config/        # DB, Cloudinary config
 │   │   ├── database/      # SQL schema
 │   │   └── server.js      # Entry point
-│   ├── railway.json       # Railway config
 │   └── package.json
-├── railway.json           # Root Railway config
-├── package.json           # Root package for Railway
+├── render.yaml            # Render deployment config
+├── package.json
 └── README.md
 ```
 
