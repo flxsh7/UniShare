@@ -223,6 +223,70 @@ export const incrementDownloadCount = async (req, res, next) => {
     }
 };
 
+// Download file with proper headers (mobile-friendly)
+export const downloadFile = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Get document details
+        const result = await query(
+            'SELECT * FROM documents WHERE id = $1',
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Document not found'
+            });
+        }
+
+        const document = result.rows[0];
+
+        // Increment download count
+        await query(
+            'UPDATE documents SET download_count = download_count + 1 WHERE id = $1',
+            [id]
+        );
+
+        // Extract file extension from file_type
+        const mimeToExt = {
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-powerpoint': '.ppt',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+            'image/jpeg': '.jpg',
+            'image/png': '.png'
+        };
+        const fileExtension = mimeToExt[document.file_type] || '';
+        const filename = `${document.title}${fileExtension}`;
+
+        // Fetch file from Cloudinary and stream it to the client with proper headers
+        const response = await fetch(document.file_url);
+
+        if (!response.ok) {
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch file from storage'
+            });
+        }
+
+        // Set proper headers for download
+        res.setHeader('Content-Type', document.file_type);
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+        res.setHeader('Content-Length', document.file_size);
+
+        // Stream the file to the client
+        const buffer = await response.arrayBuffer();
+        res.send(Buffer.from(buffer));
+    } catch (error) {
+        console.error('Download error:', error);
+        next(error);
+    }
+};
+
+
 // Delete document
 export const deleteDocument = async (req, res, next) => {
     try {
