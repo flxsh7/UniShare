@@ -271,8 +271,8 @@ export const downloadFile = async (req, res, next) => {
 
         // Add attachment flag to Cloudinary URL if not already present
         if (downloadUrl.includes('cloudinary.com') && !downloadUrl.includes('fl_attachment')) {
-            // Insert fl_attachment with filename before the version number or file path
-            downloadUrl = downloadUrl.replace('/upload/', `/upload/fl_attachment:${encodeURIComponent(filename)}/`);
+            // Insert fl_attachment before the version number or file path
+            downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/');
         }
 
         // Redirect to the download URL
