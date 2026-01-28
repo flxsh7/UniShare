@@ -15,6 +15,7 @@ const router = express.Router();
 // Public routes
 router.get('/', getDocuments);
 router.get('/:id', getDocument);
+router.get('/:id/download-file', downloadFile); // Public for mobile browser compatibility
 
 // Protected routes
 router.post(
@@ -26,7 +27,6 @@ router.post(
 );
 
 router.post('/:id/download', requireAuth, incrementDownloadCount);
-router.get('/:id/download-file', requireAuth, downloadFile);
 router.delete('/:id', requireAuth, deleteDocument);
 
 export default router;
