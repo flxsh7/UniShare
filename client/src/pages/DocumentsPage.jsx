@@ -90,20 +90,58 @@ export default function DocumentsPage() {
         try {
             await documentAPI.incrementDownload(doc.id);
 
-            // Fetch the file and force download
-            const response = await fetch(doc.file_url);
+            // Extract file extension from file_type or URL
+            let fileExtension = '';
+            if (doc.file_type) {
+                const mimeToExt = {
+                    'application/pdf': '.pdf',
+                    'application/msword': '.doc',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+                    'application/vnd.ms-powerpoint': '.ppt',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+                    'image/jpeg': '.jpg',
+                    'image/png': '.png'
+                };
+                fileExtension = mimeToExt[doc.file_type] || '';
+            }
+
+            // Try to fetch and download the file
+            console.log('📥 Downloading file from:', doc.file_url);
+            const response = await fetch(doc.file_url, {
+                mode: 'cors',
+                credentials: 'omit'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const blob = await response.blob();
+            console.log('✅ File blob received:', {
+                size: blob.size,
+                type: blob.type
+            });
+
+            if (blob.size === 0) {
+                throw new Error('Downloaded file is empty (0 bytes)');
+            }
+
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = doc.title || 'download';
+            link.download = (doc.title || 'download') + fileExtension;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (err) {
-            console.error('Error downloading document:', err);
+            console.error('❌ Error downloading document:', {
+                message: err.message,
+                doc: doc.title,
+                url: doc.file_url
+            });
             // Fallback to opening in new tab if download fails
+            alert('Direct download failed. Opening file in new tab instead.');
             window.open(doc.file_url, '_blank');
         }
     };

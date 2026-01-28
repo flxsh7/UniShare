@@ -16,13 +16,16 @@ export const uploadDocument = async (req, res, next) => {
         }
 
         // Upload to Cloudinary
+        // Use 'raw' resource type for documents to ensure proper storage and download
         const uploadResult = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
                     folder: 'unishare-documents',
-                    resource_type: 'auto',
+                    resource_type: 'raw', // Changed from 'auto' to 'raw' for proper document handling
                     use_filename: true,
-                    unique_filename: true
+                    unique_filename: true,
+                    // Preserve original format and ensure proper content-type headers
+                    flags: 'attachment'
                 },
                 (error, result) => {
                     if (error) reject(error);
