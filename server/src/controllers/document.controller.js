@@ -16,16 +16,13 @@ export const uploadDocument = async (req, res, next) => {
         }
 
         // Upload to Cloudinary
-        // Use 'raw' resource type for documents to ensure proper storage and download
         const uploadResult = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
                     folder: 'unishare-documents',
-                    resource_type: 'raw', // Changed from 'auto' to 'raw' for proper document handling
+                    resource_type: 'auto',
                     use_filename: true,
-                    unique_filename: true,
-                    // Preserve original format and ensure proper content-type headers
-                    flags: 'attachment'
+                    unique_filename: true
                 },
                 (error, result) => {
                     if (error) reject(error);
@@ -222,63 +219,6 @@ export const incrementDownloadCount = async (req, res, next) => {
             message: 'Download count updated'
         });
     } catch (error) {
-        next(error);
-    }
-};
-
-// Download file with proper headers (mobile-friendly)
-export const downloadFile = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-
-        // Get document details
-        const result = await query(
-            'SELECT * FROM documents WHERE id = $1',
-            [id]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Document not found'
-            });
-        }
-
-        const document = result.rows[0];
-
-        // Increment download count
-        await query(
-            'UPDATE documents SET download_count = download_count + 1 WHERE id = $1',
-            [id]
-        );
-
-        // Extract file extension from file_type
-        const mimeToExt = {
-            'application/pdf': '.pdf',
-            'application/msword': '.doc',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-            'application/vnd.ms-powerpoint': '.ppt',
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
-            'image/jpeg': '.jpg',
-            'image/png': '.png'
-        };
-        const fileExtension = mimeToExt[document.file_type] || '';
-        const filename = `${document.title}${fileExtension}`;
-
-        // Redirect to Cloudinary URL with proper download headers
-        // For Cloudinary 'raw' resource type, we can add fl_attachment flag
-        let downloadUrl = document.file_url;
-
-        // Add attachment flag to Cloudinary URL if not already present
-        if (downloadUrl.includes('cloudinary.com') && !downloadUrl.includes('fl_attachment')) {
-            // Insert fl_attachment before the version number or file path
-            downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/');
-        }
-
-        // Redirect to the download URL
-        res.redirect(downloadUrl);
-    } catch (error) {
-        console.error('Download error:', error);
         next(error);
     }
 };
