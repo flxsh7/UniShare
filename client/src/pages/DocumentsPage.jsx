@@ -35,10 +35,15 @@ export default function DocumentsPage() {
 
     const loadDepartments = async () => {
         try {
+            console.log('🔍 Loading departments...');
             const response = await departmentAPI.getAll();
+            console.log('📦 Full response:', response);
+            console.log('📊 Response data:', response.data);
+            console.log('🏢 Departments array:', response.data?.data);
             setDepartments(response.data?.data || []);
+            console.log('✅ Departments set successfully');
         } catch (err) {
-            console.error('Error loading departments:', err);
+            console.error('❌ Error loading departments:', err);
             setDepartments([]);
         }
     };
